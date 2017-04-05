@@ -1,9 +1,27 @@
 import json
 import string
 import sys
+from collections import OrderedDict
+
+
+#Card and card database classes to save some time
+class Card(object):
+    def __init__(self, d):
+        for a, b in d.items():
+            setattr(self, a, b)
+            #if isinstance(b, (list, tuple)):
+            #   setattr(self, a, [Card(x) if isinstance(x, dict) else x for x in b])
+            #else:
+            #   setattr(self, a, Card(b) if isinstance(b, dict) else b)
+
+class CardDatabase(object):
+    def __init__(self, d):
+        self.cards = {}
+        for a, b in d.items():
+            self.cards.update({a: Card(b)})
 
 #The basic template for all cards
-card_template = string.Template('''
+card_template = string.Template(u'''
         <card>
             <name>$name</name>
             <set picURL="$picture">$set</set>
@@ -18,7 +36,7 @@ card_template = string.Template('''
         </card>
 ''')
 
-file_start = '''<?xml version="1.0" encoding="UTF-8"?>
+file_start = u'''<?xml version="1.0" encoding="UTF-8"?>
 <cockatrice_carddatabase version="3">
     <sets>
         <set>
@@ -51,22 +69,30 @@ file_start = '''<?xml version="1.0" encoding="UTF-8"?>
             <settype>Base</settype>
             <releasedate></releasedate>
         </set>
+        <set>
+            <name>TK</name>
+            <longname>Token</longname>
+            <settype>Token</settype>
+            <releasedate></releasedate>
+        </set>
     </sets>
     <cards>
 '''
 
-file_end = '''
+file_end = u'''
     </cards>
 </cockatrice_carddatabase>
 '''
 
 #A dictionary with all the expansions thus far
 expansion_map = { "Basic": "B",
-                  "Standard Card Pack": "S",
                   "Darkness Evolved": "DE",
                   "Rise of Bahamut": "RoB",
-                  "Tempest of the Gods": "TotG"}
+                  "Standard Card Pack": "S",
+                  "Tempest of the Gods": "TotG",
+                  "Token": "TK"}
 
+#The parsing function
 def parse_db(db):
     output = ""
     for key, value in db.cards.items():
@@ -107,21 +133,7 @@ def parse_db(db):
 
     return output
 
-class Card(object):
-    def __init__(self, d):
-        for a, b in d.items():
-            setattr(self, a, b)
-            #if isinstance(b, (list, tuple)):
-            #   setattr(self, a, [Card(x) if isinstance(x, dict) else x for x in b])
-            #else:
-            #   setattr(self, a, Card(b) if isinstance(b, dict) else b)
-
-class CardDatabase(object):
-    def __init__(self, d):
-        self.cards = {}
-        for a, b in d.items():
-            self.cards.update({a: Card(b)})
-
+#Beginning of the script itself
 if len(sys.argv) > 2:
     file_input = sys.argv[1]
     file_output = sys.argv[2]
@@ -133,7 +145,8 @@ x = ""
 
 try:
     with open(file_input, 'r') as data:
-        x = json.load(data)
+        x = json.load(data, object_pairs_hook=OrderedDict)
+        x = OrderedDict(sorted(x.items(), key=lambda t: t[1]['expansion'])) #Sort by set, as such order matters in the Cockatrice DB
         print('Loaded ' + len(x).__str__() + ' cards.')
 except Exception, Argument:
     print "An error occurred when loading the JSON file: ", Argument
