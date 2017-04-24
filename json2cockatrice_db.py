@@ -1,3 +1,5 @@
+#! python2
+
 import json
 import string
 import sys
@@ -149,7 +151,7 @@ try:
         x = OrderedDict(sorted(x.items(), key=lambda t: t[1]['expansion'])) #Sort by set, as such order matters in the Cockatrice DB
         print('Loaded ' + len(x).__str__() + ' cards.')
 except Exception, Argument:
-    print "An error occurred when loading the JSON file: ", Argument
+    print("An error occurred when loading the JSON file: ", Argument)
 
 try:
     x_obj = CardDatabase(x)
@@ -158,8 +160,8 @@ try:
     with open(file_output, 'w') as data:
         data.write(xml_output.replace('<br>', '\n').encode("utf8"))
 
-    print "Saved database file to: " + file_output
+    print("Saved database file to: " + file_output)
 
 except Exception, Argument:
-    print "An error occurred when saving: ", Argument
+    print("An error occurred when saving: ", Argument)
 
